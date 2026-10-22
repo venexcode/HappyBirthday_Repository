@@ -235,7 +235,7 @@ function archivoABase64(file) {
 // Se usa SOLO como respaldo/diseño para guardar en Drive; la web nunca
 // muestra esta imagen, siempre arma la tarjeta con texto real + foto real.
 // -------------------------------------------------------------
-async function capturarTarjetaComoPNG(cardElement) {
+/* async function capturarTarjetaComoPNG(cardElement) {
   const btnBorrar = cardElement.querySelector(".btn-delete");
   const postActions = cardElement.querySelector(".post-actions");
   if (btnBorrar) btnBorrar.style.visibility = "hidden";
@@ -253,7 +253,43 @@ async function capturarTarjetaComoPNG(cardElement) {
     if (btnBorrar) btnBorrar.style.visibility = "visible";
     if (postActions) postActions.style.visibility = "visible";
   }
+} */
+
+
+// =====================================================================
+// REEMPLAZÁ la función capturarTarjetaComoPNG de script.js por esta.
+// (Si preferís no tocar script.js, cargá este archivo DESPUÉS de script.js.)
+// La captura que va a Drive usa el diseño ORIGINAL de la tarjeta (clase
+// .capturando, definida en velada.css); la pantalla mantiene el diseño nuevo.
+// =====================================================================
+async function capturarTarjetaComoPNG(cardElement) {
+  const btnBorrar = cardElement.querySelector(".btn-delete");
+  const postActions = cardElement.querySelector(".post-actions");
+  if (btnBorrar) btnBorrar.style.visibility = "hidden";
+  if (postActions) postActions.style.visibility = "hidden";
+
+  cardElement.dataset.capturaId = "1"; // marca para encontrar la tarjeta en el clon
+
+  try {
+    const canvas = await html2canvas(cardElement, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: selectedColor || "#FFFFFF",
+      ignoreElements: (el) => el.tagName === "CANVAS",
+      onclone: (docClon) => {
+        const clon = docClon.querySelector('[data-captura-id="1"]');
+        if (clon) clon.classList.add("capturando");
+      },
+    });
+    return canvas.toDataURL("image/png");
+  } finally {
+    delete cardElement.dataset.capturaId;
+    if (btnBorrar) btnBorrar.style.visibility = "visible";
+    if (postActions) postActions.style.visibility = "visible";
+  }
 }
+
+  
 
 // -------------------------------------------------------------
 // Envía el payload al backend.
